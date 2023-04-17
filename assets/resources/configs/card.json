@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "name": "Attack #1",
+        "description": "Attack #1",
+        "resource": "attack",
+        "levels": {
+            "1": [
+                "attack 10"
+            ],
+            "2": [
+                "attack 20"
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "name": "Attack #2",
+        "description": "Attack #2",
+        "resource": "attack",
+        "levels": {
+            "1": [
+                "attack 5"
+            ],
+            "2": [
+                "attack 30"
+            ]
+        }
+    }
+]

@@ -27,35 +27,22 @@ export async function loadAnimaClip(path: string): Promise<cc.AnimationClip> {
  * await loadLocalRes('ui/next_btn', cc.SpriteFrame);
  * ```
  */
-export function loadLocalRes(localPath: string, type: any) {
-    return new Promise<any>((resolve, reject) => {
-        cc.resources.load(localPath, type, (err, resouce) => {
-            if (resouce) {
-                resolve(resouce)
-            } else {
-                reject('Local RES load failed, pls check out path!' + err)
-            }
-        })
-    })
+export function loadLocalRes<T extends cc.Asset>(path: string) {
+    // if (!path) {
+    //     return
+    // }
+    // if (CC_DEBUG) {
+    //     console.debug("load res", path)
+    // }
+
+    // return new Promise<T>((resolve, reject) => {
+    //     cc.resources.load<T>(path, (err, asset) => {
+    //         err ? reject(err) : resolve(asset as T)
+    //     })
+    // })
+
+    return loadRes<T>(path, cc.Asset)
 }
-
-// export async function loadSpritFrame(path: string, sprit?: cc.Sprite) {
-//     const spriteFrame = await ResUtil.loadRes<cc.SpriteFrame>(path, cc.SpriteFrame)
-//     if (sprit) {
-//         sprit.spriteFrame = spriteFrame
-//     }
-//     return spriteFrame
-// }
-
-// export async function loadRemoteSpritFrame(path: string, sprite: cc.Sprite) {
-//     const spriteAsset = await ResUtil.loadRemote<cc.SpriteFrame>(path, cc.SpriteFrame)
-//     const spriteFrame = new cc.SpriteFrame(spriteAsset as any);
-//     if (sprite) {
-//         sprite.spriteFrame = spriteFrame
-//     }
-//     return spriteFrame
-// }
-
 
 export async function loadRemote<T extends cc.Asset>(path: string, type?: typeof cc.Asset): Promise<T> {
     if (!path) {
@@ -66,7 +53,6 @@ export async function loadRemote<T extends cc.Asset>(path: string, type?: typeof
     }
     return new Promise<T>((resolve, reject) => {
         cc.assetManager.loadRemote<T>(env.network.resourceURL + path, (err, asset) => {
-            resolve(asset)
             err ? reject(err) : resolve(asset as T)
         })
     })
@@ -82,18 +68,18 @@ export async function loadRes<T extends cc.Asset>(path: string, type: typeof cc.
     let bundle = cc.resources
     let bundleName = "resources"
     let useRemote = false
-    if (!bundle.getInfoWithPath(path)) {
-        bundleName = "remote"
-        useRemote = true
-        bundle = cc.assetManager.getBundle(bundleName)
-        if (!bundle) {
-            bundle = await new Promise((resolve, reject) => {
-                cc.assetManager.loadBundle(bundleName, (err, bundle) => {
-                    err ? reject(err) : resolve(bundle)
-                })
-            })
-        }
-    }
+    // if (!bundle.getInfoWithPath(path)) {
+    //     bundleName = "remote"
+    //     useRemote = true
+    //     bundle = cc.assetManager.getBundle(bundleName)
+    //     if (!bundle) {
+    //         bundle = await new Promise((resolve, reject) => {
+    //             cc.assetManager.loadBundle(bundleName, (err, bundle) => {
+    //                 err ? reject(err) : resolve(bundle)
+    //             })
+    //         })
+    //     }
+    // }
     const res = await getResFromBundle<T>(bundleName, path, type)
     if (res) {
         return res

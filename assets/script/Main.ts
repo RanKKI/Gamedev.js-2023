@@ -1,5 +1,6 @@
 import "cc";
 import { UI } from "./manager/ui-manager";
+import { userData } from "./user/userdata";
 
 const { ccclass, menu } = cc._decorator
 
@@ -9,7 +10,18 @@ export default class Main extends cc.Component {
 
     async start() {
         console.log("Main start")
+        await this.loadUserData()
         await UI.openLayer("prefab/layers/GameLayer", null)
+    }
+
+    private async loadUserData() {
+        console.log("load user data")
+        userData.load()
+
+        console.debug("load debug data")
+        userData.loadDebug()
+
+        console.log("finish load user data")
     }
 
 }

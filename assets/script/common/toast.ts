@@ -18,7 +18,7 @@ export async function showToast(text: string, duration: number = 3000) {
     const oldToast = canvas.node.getChildByName('Toast')
     if (oldToast) oldToast.destroy()
 
-    const bgSpriteImg: cc.SpriteFrame = await loadLocalRes('ui/guide/common_txt_bg', cc.SpriteFrame);
+    const bgSpriteImg = await loadLocalRes< cc.SpriteFrame>('ui/guide/common_txt_bg');
 
     const toastBgNode = new cc.Node('Toast');
     toastBgNode.opacity = 0

@@ -35,7 +35,7 @@ export class UI {
         }
     }
 
-    public static getTopLayer(): any {
+    public static getTopLayer(): BaseLayer {
         const layers = LayerManager.ins.layers
         if (layers.length > 0) {
             const layer = layers[layers.length - 1]

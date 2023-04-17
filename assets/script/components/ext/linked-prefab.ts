@@ -18,6 +18,8 @@ export default class LinkPrefab extends cc.Component {
         return this._prefab
     }
 
+    private _prefabNode: cc.Node = null
+
     private _onPrefabChanged(oldValue: cc.Prefab, newValue: cc.Prefab) {
         if (oldValue == newValue) {
             return
@@ -25,6 +27,7 @@ export default class LinkPrefab extends cc.Component {
         this._prefab = newValue
         if (newValue) {
             let prefabNode = cc.instantiate(newValue);
+            this._prefabNode = prefabNode
             if (prefabNode) {
                 // cc.Object["Flags"].DontSave          // 当前节点不会被保存到 prefab 文件里
                 // cc.Object["Flags"].LockedInEditor    // 当前节点及子节点在编辑器里不会被点击到
@@ -39,6 +42,13 @@ export default class LinkPrefab extends cc.Component {
 
     onLoad() {
         this._onPrefabChanged(null, this._prefab)
+    }
+
+    getComponent<T extends cc.Component>(type: { prototype: T; }): T;
+    getComponent(className: string);
+    getComponent(className: unknown): any {
+        // @ts-ignore
+        return this._prefabNode.getComponent(className)
     }
 
 }

@@ -11,6 +11,10 @@ export const LogLevel = {
 }
 
 export const logEvent = new TypedEvent<Partial<{ log: string, level: typeof LogLevel }>>()
+export const GameEvent = {
+    UserRoundFinished: "UserRoundFinished",
+}
+export const gameEvent = new TypedEvent<{ name: string, data: any }>()
 
 const events = [
     logEvent
