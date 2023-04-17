@@ -11,7 +11,7 @@ export enum CardDeckMode {
     Computer,
 }
 
-@ccclass("CardDeck")
+@ccclass
 @menu("components/CardDeck")
 export class CardDeckComponent extends cc.Component {
 

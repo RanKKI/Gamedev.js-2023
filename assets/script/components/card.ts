@@ -2,7 +2,7 @@ import "cc";
 
 const { ccclass, property, menu } = cc._decorator;
 
-@ccclass("Card")
+@ccclassgst
 @menu("components/Card")
 export class CardComponent extends cc.Component {
 
