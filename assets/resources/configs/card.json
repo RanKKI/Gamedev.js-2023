@@ -7,10 +7,11 @@
         "levels": {
             "1": [
                 "attack 10",
-                "effect 40% +10%attach"
+                "effect 10% +10%attack"
             ],
             "2": [
-                "attack 20"
+                "attack 20",
+                "effect 40% +20attack"
             ]
         }
     },
@@ -21,24 +22,48 @@
         "resource": "attack",
         "levels": {
             "1": [
-                "attack 5"
+                "attack 5",
+                "effect 50% +20attack"
             ],
             "2": [
-                "attack 30"
+                "attack 30",
+                "effect 50% +20attack"
             ]
         }
     },
     {
         "id": 3,
-        "name": "Attack #3",
-        "description": "Attack #3",
-        "resource": "attack",
+        "name": "Energy",
+        "description": "Add energy to shield",
+        "resource": "energy",
         "levels": {
             "1": [
-                "attack 5"
+                "energy +1"
             ],
             "2": [
-                "attack 30"
+                "energy +2"
+            ]
+        }
+    },
+    {
+        "id": 4,
+        "name": "Skip Card",
+        "description": "Skip one enemy turn",
+        "resource": "skip",
+        "levels": {
+            "1": "skipturn 1",
+            "2": "skipturn 1"
+        }
+    },
+    {
+        "id": 4,
+        "name": "Berserker",
+        "description": "some description",
+        "resource": "berserker",
+        "levels": {
+            "1": [
+                "attack 3",
+                "strength 2"
             ]
         }
     }
