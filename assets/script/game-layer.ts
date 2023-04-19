@@ -4,6 +4,7 @@ import BaseLayer from "./components/base/base-layer"
 import LinkPrefab from "./components/ext/linked-prefab"
 import { CardDeckMode, CardDeckComponent } from "./components/card-deck"
 import { gameEvent, GameEvent } from "./common/event/events"
+import { touchLocker } from "./common/locker"
 
 const { ccclass, menu, property } = cc._decorator
 
@@ -37,9 +38,20 @@ export default class GameLayer extends BaseLayer {
         gameEvent.on((arg) => this.onGameEvent(arg.name, arg.data))
     }
 
+    /* 处理回合 */
     private onGameEvent(event: string, data: any) {
-        if (event == GameEvent.UserRoundFinished) {
-            this.oppositeDeck.play()
+
+    }
+
+    @touchLocker
+    public async startGame() {
+        const p1 = this.playerDeck
+        const p2 = this.oppositeDeck
+        let i = 0;
+        while (i <= 10) {
+            await p1.play()
+            await p2.play()
+            i++;
         }
     }
 

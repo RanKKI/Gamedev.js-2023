@@ -1,8 +1,9 @@
 import "cc";
+import { getLocalTouchPos } from "../common";
 
 const { ccclass, property, menu } = cc._decorator;
 
-@ccclassgst
+@ccclass
 @menu("components/Card")
 export class CardComponent extends cc.Component {
 
@@ -26,17 +27,47 @@ export class CardComponent extends cc.Component {
         this.setSelect(this.bSelected)
     }
 
-    public setIsVisible(isVisible: boolean) {
+    public async setIsVisible(isVisible: boolean, withAnima?: boolean) {
+        if (isVisible == this.isVisible) {
+            return;
+        }
+        this.isVisible = isVisible;
         this.cardNode.active = isVisible;
         this.cardBg.active = !isVisible;
-        this.isVisible = isVisible;
+        if (!withAnima || withAnima == null) {
+            return;
+        }
+        this.cardNode.opacity = isVisible ? 0 : 255;
+        this.cardBg.opacity = isVisible ? 255 : 0;
+        const a1 = new Promise<void>((resolve) => {
+            cc.tween(this.cardNode)
+                .to(0.4, { opacity: isVisible ? 255 : 0 }, { easing: cc.easing.sineIn })
+                .call(() => {
+                    resolve()
+                    this.cardNode.active = isVisible;
+                })
+                .start()
+        })
+        const a2 = new Promise<void>((resolve) => {
+            cc.tween(this.cardBg)
+                .to(0.2, { opacity: isVisible ? 0 : 255 })
+                .call(() => {
+                    this.cardBg.active = !isVisible;
+                    resolve()
+                })
+                .start()
+        })
+        await Promise.all([a1, a2])
     }
 
-    public hitTest(evt: cc.Event.EventTouch): boolean {
-        let touchPos = evt.getLocation()
-        cc.Camera.main.getScreenToWorldPoint(touchPos, touchPos);//世界坐标
-        this.node.convertToNodeSpaceAR(touchPos, touchPos);//本地坐标
-        return cc.Intersection.pointInPolygon(touchPos, this.collider.points)
+    public hitTest(evt: cc.Event.EventTouch | cc.Vec2): boolean {
+        let pos: cc.Vec2 = cc.Vec2.ZERO
+        if (evt instanceof cc.Event.EventTouch) {
+            pos = getLocalTouchPos(evt, this.node)
+        } else {
+            pos = evt
+        }
+        return cc.Intersection.pointInPolygon(pos, this.collider.points)
     }
 
     private currentAngle: number = 0;
@@ -44,6 +75,10 @@ export class CardComponent extends cc.Component {
     private currentZIndex: number = 0;
 
     public beforeMoving() {
+        if (this.node == null) {
+            console.log("beforeMoving node is null")
+            return;
+        }
         this.currentAngle = this.node.angle;
         this.currentPos = this.node.position.clone();
         this.currentZIndex = this.node.getSiblingIndex();
@@ -81,4 +116,20 @@ export class CardComponent extends cc.Component {
             this.node.setSiblingIndex(this.currentZIndex);
         }
     }
+
+    public recycle() {
+        // reset all properties
+        this.setIsVisible(false);
+        this.setSelect(false);
+        this.node.angle = 0;
+        this.node.position = cc.Vec3.ZERO;
+        this.node.setSiblingIndex(0);
+        this.currentAngle = 0;
+        this.currentPos = null;
+        this.currentZIndex = 0;
+        this.node.opacity = 255;
+        this.cardNode.opacity = 255
+        this.cardBg.opacity = 255
+    }
+
 }

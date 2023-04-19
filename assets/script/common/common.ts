@@ -55,6 +55,8 @@ export function disableAllTouch(disable: boolean) {
     }
     if (globalBlockInputComp) {
         globalBlockInputComp.enabled = disable
+    } else {
+        console.error("globalBlockInputComp is null")
     }
 }
 
@@ -297,3 +299,10 @@ export function mapRange(current: number, in_min: number, in_max: number, out_mi
 }
 
 export const isPord = false
+
+export const getLocalTouchPos = (touch: cc.Event.EventTouch, node: cc.Node) => {
+    const touchPos = touch.getLocation();
+    cc.Camera.main.getScreenToWorldPoint(touchPos, touchPos);//世界坐标
+    node.convertToNodeSpaceAR(touchPos, touchPos);//本地坐标
+    return touchPos;
+}

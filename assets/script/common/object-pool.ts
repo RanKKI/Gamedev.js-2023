@@ -1,3 +1,4 @@
+import { CardComponent } from "../components/card";
 import { loadPrefab } from "../manager/resources";
 
 type Factory<T> = () => T | Promise<T>;
@@ -11,17 +12,31 @@ class ObjectPool<T> {
     }
 
     public async get() {
+        let result: T;
         if (this._pool.length > 0) {
-            return this._pool.pop();
+            result = this._pool.pop();
+        } else {
+            const obj = this._factory();
+            if (obj instanceof Promise) {
+                result = await obj;
+            } else {
+                result = obj
+            }
         }
-        const obj = this._factory();
-        if (obj instanceof Promise) {
-            return await obj;
+        if (result instanceof cc.Node) {
+            if (result.getComponent(CardComponent)) {
+                result.getComponent(CardComponent).recycle()
+            }
         }
-        return obj;
+        return result;
     }
 
-    public put(obj: any) {
+    public put(obj: T) {
+        if (obj instanceof cc.Node) {
+            obj.removeFromParent();
+            cc.Tween.stopAllByTarget(obj);
+            obj.cleanup();
+        }
         this._pool.push(obj);
     }
 
