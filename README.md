@@ -20,3 +20,7 @@ Hosted on [github.io](https://rankki.github.io/gamedev.js-2023/)
 ## Tech Stack
  - Cocos Creator 2.X
  - TypeScript
+
+## Credits
+
+ - [Sleek Bars](https://opengameart.org/content/sleek-bars)

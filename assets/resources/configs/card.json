@@ -6,7 +6,8 @@
         "resource": "attack",
         "levels": {
             "1": [
-                "attack 10"
+                "attack 10",
+                "effect 40% +10%attach"
             ],
             "2": [
                 "attack 20"
@@ -17,6 +18,20 @@
         "id": 2,
         "name": "Attack #2",
         "description": "Attack #2",
+        "resource": "attack",
+        "levels": {
+            "1": [
+                "attack 5"
+            ],
+            "2": [
+                "attack 30"
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "name": "Attack #3",
+        "description": "Attack #3",
         "resource": "attack",
         "levels": {
             "1": [

@@ -1,6 +1,7 @@
 import "cc";
 import { UI } from "./manager/ui-manager";
 import { userData } from "./user/userdata";
+import { cardConfigManager } from "./game-logic/card-manager";
 
 const { ccclass, menu } = cc._decorator
 
@@ -10,6 +11,7 @@ export default class Main extends cc.Component {
 
     async start() {
         console.log("Main start")
+        await cardConfigManager.loadConfigs()
         await this.loadUserData()
         await UI.openLayer("prefab/layers/GameLayer", null)
     }

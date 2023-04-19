@@ -5,6 +5,7 @@ import { getLocalTouchPos, randomChoice, randomChoiceOne, sleep } from "../commo
 import { GameEvent, gameEvent } from "../common/event/events";
 import { UI } from "../manager/ui-manager"
 import LinkPrefab from "./ext/linked-prefab";
+import { BarComponent } from "./bar";
 const { ccclass, property, menu } = cc._decorator;
 
 export enum CardDeckMode {
@@ -74,6 +75,68 @@ export class CardDeckComponent extends cc.Component {
         return 50 + idx * 20
     }
 
+    /* 玩家状态 */
+
+    @property(LinkPrefab)
+    public hpBarPrefab: LinkPrefab = null
+
+    get hpBar() {
+        return this.hpBarPrefab.getComponent(BarComponent)
+    }
+
+    private HP = 0
+
+    public isDead() {
+        return this.HP <= 0
+    }
+
+    public addHP(value: number) {
+        this.HP += value
+        this.hpBar.setPercentage(this.HP / 100, true)
+    }
+
+    public setHP(value: number) {
+        this.HP = value
+        this.hpBar.setPercentage(this.HP / 100)
+    }
+
+    private effects = []
+
+    /* 卡池 */
+    private cardsPool: Card[] = []
+    private nextCardIdx = 0
+    private direction = -1
+
+    private initCardsPool() {
+        this.nextCardIdx = this.cardsPool.length - 1
+    }
+
+    private getNextCard(): Card {
+        // 循环从 cardsPool 中取出卡牌
+        const card = this.cardsPool[this.nextCardIdx]
+        if (this.nextCardIdx <= 0) {
+            this.direction = 1
+            this.nextCardIdx = 0
+        } else if (this.nextCardIdx >= this.cardsPool.length - 1) {
+            this.direction = -1
+            this.nextCardIdx = this.cardsPool.length - 1
+        }
+        this.nextCardIdx += this.direction
+        return card
+    }
+
+    public async prepare(cardsPool: Card[]) {
+        // 为开始游戏做准备，
+
+        // 设置卡组
+        this.cardsPool = cardsPool
+        this.initCardsPool()
+        // 恢复 HP
+        this.setHP(100)
+        // 清空状态
+        this.effects = []
+    }
+
     /* 玩家从卡池中抽取一张卡牌 */
 
     @property(LinkPrefab)
@@ -95,6 +158,14 @@ export class CardDeckComponent extends cc.Component {
         // 加入到界面中，并播放动画，插入到卡组
         this.deck.addChild(cardNode)
         this.cards.push(card)
+
+        // 配置 Card
+        const conf = this.getNextCard()
+        if (this.mode === CardDeckMode.Player) {
+            console.log("conf", conf.name)
+        }
+        card.setCard(conf)
+
         await this.reorderCard(true)
     }
 
@@ -115,7 +186,7 @@ export class CardDeckComponent extends cc.Component {
         await Promise.all(tasks)
     }
 
-    public async play() {
+    public async play(): Promise<CardCommand[]> {
         const card = this.cards.splice(0, 1)[0]
         // move card to center of table
 
@@ -143,5 +214,11 @@ export class CardDeckComponent extends cc.Component {
             this.useCard(card),
             this.drawCard()
         ])
+        return []
     }
+
+    public async execute(commands: CardCommand[]) {
+        this.addHP(-10)
+    }
+
 }

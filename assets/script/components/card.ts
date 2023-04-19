@@ -117,6 +117,10 @@ export class CardComponent extends cc.Component {
         }
     }
 
+    public setCard(card: Card) {
+
+    }
+
     public recycle() {
         // reset all properties
         this.setIsVisible(false);

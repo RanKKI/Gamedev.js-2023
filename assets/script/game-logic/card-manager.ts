@@ -6,7 +6,7 @@ interface Command {
 
 class CardManager {
 
-    private cardConfig: Card[]
+    private cardConfig: { [key: number]: Card }
     private effectConfig: { [key: string]: CardEffect }
     private skillConfig: Skill[]
     private itemConfig: Item[]
@@ -15,9 +15,46 @@ class CardManager {
         return loadLocalRes<cc.JsonAsset>('configs/' + name)
     }
 
+    public getCard(id: number): Card {
+        const result = this.cardConfig[id]
+        if (!result) {
+            throw new Error('card not found: ' + id)
+        }
+        return result
+    }
+
+    private async loadCardConfig() {
+        console.log('load card config')
+        const conf = await this.loadJSONConfig('card')
+        if (!conf || !conf.json) {
+            throw new Error('load card config failed')
+        }
+        const rawCards = conf.json as RawCard[]
+        this.cardConfig = {}
+        for (const rawCard of rawCards) {
+            const card: Card = {
+                id: rawCard.id,
+                name: rawCard.name,
+                description: rawCard.description,
+                resource: rawCard.resource,
+                levels: {},
+            }
+            for (const level in rawCard.levels) {
+                const rawLevel = rawCard.levels[level]
+                if (typeof rawLevel === 'string') {
+                    card.levels[level] = [rawLevel]
+                } else {
+                    card.levels[level] = rawLevel
+                }
+            }
+            this.cardConfig[card.id] = card
+        }
+        console.log('load card config done')
+    }
+
     private async validateCards() {
         // no duplicate id
-        const ids = this.cardConfig.map(c => c.id)
+        const ids = Object.keys(this.cardConfig)
         const uniqueIds = new Set(ids)
         if (ids.length !== uniqueIds.size) {
             throw new Error('duplicate card id')
@@ -25,43 +62,14 @@ class CardManager {
     }
 
     async loadConfigs() {
-        return;
-
-        // const result = await Promise.all([
-        //     this.loadJSONConfig('card'),
-        //     this.loadJSONConfig('skills'),
-        //     this.loadJSONConfig('items'),
-        //     this.loadJSONConfig('effect'),
-        // ]).then(res => res.map(r => r.json))
-
-        // // load effect, effect.id as key as key
-        // this.effectConfig = {}
-        // for (const effect of result[3]) {
-        //     this.effectConfig[effect.key] = effect.value
-        // }
-
-        // // 处理卡牌配置
-        // const cards: RawCard[] = result[0]
-        // const formattedCards: Card[] = []
-        // for (const card of cards) {
-        //     const levels: { [key: number]: string[] } = {}
-        //     for (const level in card.levels) {
-        //         const effect = card.levels[level]
-        //         levels[level] = Array.isArray(effect) ? effect : [effect]
-        //     }
-        //     formattedCards.push({
-        //         ...card,
-        //         levels,
-        //     })
-        // }
-        // this.cardConfig = formattedCards
-
-        // this.skillConfig = result[1]
-        // this.itemConfig = result[2]
-
-        // this.validateCards()
+        console.log('load configs')
+        await Promise.all([
+            this.loadCardConfig(),
+        ])
+        this.validateCards()
+        console.log('load configs done')
     }
 
 }
 
-export const cardManager = new CardManager()
+export const cardConfigManager = new CardManager()

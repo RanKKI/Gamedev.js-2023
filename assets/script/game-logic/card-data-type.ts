@@ -40,3 +40,7 @@ type UserCardData = {
     id: CardID
     level: number
 }[]
+
+interface CardCommand {
+
+}

@@ -5,6 +5,7 @@ import LinkPrefab from "./components/ext/linked-prefab"
 import { CardDeckMode, CardDeckComponent } from "./components/card-deck"
 import { gameEvent, GameEvent } from "./common/event/events"
 import { touchLocker } from "./common/locker"
+import { cardConfigManager } from "./game-logic/card-manager"
 
 const { ccclass, menu, property } = cc._decorator
 
@@ -43,15 +44,42 @@ export default class GameLayer extends BaseLayer {
 
     }
 
+    private async selectCards(): Promise<Card[]> {
+        const conf = cardConfigManager
+        return [
+            conf.getCard(1),
+            conf.getCard(2),
+            conf.getCard(3),
+        ]
+    }
+
     @touchLocker
     public async startGame() {
         const p1 = this.playerDeck
         const p2 = this.oppositeDeck
-        let i = 0;
-        while (i <= 10) {
-            await p1.play()
-            await p2.play()
-            i++;
+        /* 设置卡组 */
+        const cards = await this.selectCards()
+
+        p1.prepare(cards)
+        p2.prepare(cards.reverse())
+
+        let isPlayerWin = false
+        while (!p1.isDead() && !p2.isDead()) {
+            const cmd = await p1.play()
+            await p2.execute(cmd)
+            if (p2.isDead()) {
+                isPlayerWin = true
+                break
+            }
+            const cmd1 = await p2.play()
+            await p1.execute(cmd1)
+            if (p1.isDead()) break
+        }
+
+        if (isPlayerWin) {
+
+        } else {
+
         }
     }
 
