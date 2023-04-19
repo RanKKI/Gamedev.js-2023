@@ -26,28 +26,20 @@ type UserCardData = {
 }[]
 
 
-type Commands = 'attack' | 'effect' | 'buff' | "energy";
+type Commands = 'attack' | 'effect' | 'buff' | "energy" | "skipturn";
 
-interface CardCommand {
+interface NormalCommand {
     type: Commands,
     value: number
 }
 
-interface AttackCommand extends CardCommand {
-    type: 'attack'
-}
-
-interface EnergyCommand extends CardCommand {
-    type: 'energy'
-}
-
-interface EffectCommand extends CardCommand {
+interface EffectCommand extends NormalCommand {
     type: 'effect',
     value: number // 概率
     buff: BuffCommand
 }
 
-interface BuffCommand extends CardCommand {
+interface BuffCommand extends NormalCommand {
     type: 'buff',
     on: Commands,
     value: number,

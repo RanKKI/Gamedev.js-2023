@@ -47,7 +47,10 @@ export default class GameLayer extends BaseLayer {
         return [
             conf.getCard(1),
             conf.getCard(2),
+            conf.getCard(2),
+            conf.getCard(2),
             conf.getCard(3),
+            conf.getCard(4),
         ]
     }
 
@@ -64,7 +67,11 @@ export default class GameLayer extends BaseLayer {
         ])
 
         let isPlayerWin = false
+        let round = 0
         while (!p1.isDead() && !p2.isDead()) {
+            p1.setRound(round)
+            p2.setRound(round)
+
             const cmd = await p1.play()
             await p2.execute(cmd)
             if (p2.isDead()) {
@@ -74,12 +81,15 @@ export default class GameLayer extends BaseLayer {
             const cmd1 = await p2.play()
             await p1.execute(cmd1)
             if (p1.isDead()) break
+
+            round++
+            console.log(`-----------${round}------------`)
         }
 
         if (isPlayerWin) {
-
+            console.log("player win")
         } else {
-
+            console.log("player lose")
         }
     }
 

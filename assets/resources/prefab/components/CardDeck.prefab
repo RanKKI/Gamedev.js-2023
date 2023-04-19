@@ -515,7 +515,7 @@
     "hpBarPrefab": {
       "__id__": 13
     },
-    "cardPool": {
+    "cardPoolNode": {
       "__id__": 10
     },
     "_id": ""

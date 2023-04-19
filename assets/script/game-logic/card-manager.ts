@@ -66,7 +66,7 @@ class CardManager {
         console.log('load configs done')
     }
 
-    public convertToCommands(card: Card, level: number): CardCommand[] {
+    public convertToCommands(card: Card, level: number): NormalCommand[] {
         let effects = card.levels[level]
         while (effects == null) {
             level--;
@@ -76,7 +76,7 @@ class CardManager {
             throw new Error('no effect for card ' + card.id + ' level ' + level)
         }
 
-        const result: CardCommand[] = []
+        const result: NormalCommand[] = []
         for (const effect of effects) {
             result.push(cmdParser.parse(effect))
         }

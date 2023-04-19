@@ -7,7 +7,7 @@
         "levels": {
             "1": [
                 "attack 10",
-                "effect 10% 10% attack"
+                "effect 50% 10% attack"
             ],
             "2": [
                 "attack 20",
@@ -23,7 +23,7 @@
         "levels": {
             "1": [
                 "attack 5",
-                "effect 50% 20 attack"
+                "effect 5% 20 attack"
             ],
             "2": [
                 "attack 30",

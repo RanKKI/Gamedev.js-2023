@@ -33,8 +33,17 @@ export class CardDeckComponent extends cc.Component {
         this.mode = mode;
     }
 
-    private log(...msg: (string | number | boolean)[]) {
-        console.log(`[Player ${this.mode}]`, ...msg)
+    get selfName() {
+        return this.mode === CardDeckMode.Player ? "Player" : "Computer";
+    }
+
+    private round: number = 0
+    public setRound(round: number) {
+        this.round = round
+    }
+
+    private log(...msg: any[]) {
+        console.log(`[${this.round}][${this.selfName}]`, ...msg)
     }
 
     protected start(): void {
@@ -90,8 +99,10 @@ export class CardDeckComponent extends cc.Component {
     }
 
     public addHP(value: number) {
+        if(value == 0) return;
         this.HP += value
         this.hpBar.setPercentage(this.HP / 100, true)
+        this.log(`HP ${value > 0 ? "+": "-"}${Math.abs(value)}, HP: ${this.HP}`)
     }
 
     public setHP(value: number) {
@@ -99,14 +110,15 @@ export class CardDeckComponent extends cc.Component {
         this.hpBar.setPercentage(this.HP / 100)
     }
 
-    private effects: EffectCommand[] = []
+    private effects: NormalCommand[] = []
 
     /* 卡池 */
     private cardsPool: Card[] = []
     private nextCardIdx = 0
     private direction = -1
 
-    private initCardsPool() {
+    private resetCardsPool() {
+        this.cardsPool = []
         this.nextCardIdx = 0
         this.direction = 1
     }
@@ -132,31 +144,29 @@ export class CardDeckComponent extends cc.Component {
         // 为开始游戏做准备，
 
         // 设置卡组
-        this.cardsPool = cardsPool
-        this.initCardsPool()
+        this.resetCardsPool()
+        this.cardsPool = [...cardsPool]
         // 恢复 HP
         this.setHP(100)
         // 清空状态
         this.effects = []
 
         await this.createCard()
+
+        this.log(this.cards.map(v => v.conf.name))
     }
 
     /* 玩家从卡池中抽取一张卡牌 */
 
     @property(LinkPrefab)
-    public cardPool: LinkPrefab = null;
-
-    get cardPoolNode() {
-        return this.cardPool.node
-    }
+    public cardPoolNode: LinkPrefab = null;
 
     public async drawCard() {
         // 从对象池中抽取一张卡牌
         const cardNode = await objectPool.cardPool.get()
 
         // 初始化信息
-        cardNode.setPosition(this.cardPoolNode.getPosition())
+        cardNode.setPosition(this.cardPoolNode.node.getPosition())
         const card = cardNode.getComponent(CardComponent)
         card.setIsVisible(this.mode === CardDeckMode.Player)
 
@@ -188,9 +198,16 @@ export class CardDeckComponent extends cc.Component {
         await Promise.all(tasks)
     }
 
-    public async play(): Promise<CardCommand[]> {
+    public async play(): Promise<NormalCommand[]> {
+        if (this.needsSkip()) {
+            this.log("Skip this turn")
+            return []
+        }
+
         const card = this.cards.splice(0, 1)[0]
         // move card to center of table
+
+        this.log("Play card", card.conf.name)
 
         const centerPos = cc.v2(0, 50)
 
@@ -217,26 +234,35 @@ export class CardDeckComponent extends cc.Component {
             this.drawCard()
         ])
 
-        let cmds = cardConfigManager.convertToCommands(card.conf, 1)
-        cmds = this.useEffect(cmds)
-        return cmds
+        return cardConfigManager.convertToCommands(card.conf, 1);
     }
 
-    private useEffect(cmds: CardCommand[]): CardCommand[] {
-        return cmds
+    private needsSkip(): boolean {
+        const skipCard = this.effects.find(effect => effect.type === "skipturn")
+        if (skipCard) {
+            skipCard.value--;
+            if (skipCard.value <= 0) {
+                this.effects.splice(this.effects.indexOf(skipCard), 1)
+            }
+            return true;
+        }
+        return false
     }
 
-    private executeMap = {
-        "attack": (command: AttackCommand) => this.executeAttack(command),
-        "effect": (command: EffectCommand) => this.executeEffect(command),
+    private executeMap: { [key: string]: (command: NormalCommand) => void } = {
+        "attack": (command: NormalCommand) => this.executeAttack(command),
+        "skipturn": (command: NormalCommand) => this.executeSkipTurn(command),
     }
 
-    public async execute(commands: CardCommand[]) {
+    public async execute(commands: NormalCommand[]) {
         const effects = this.findCommandsByType<EffectCommand>(commands, "effect")
         commands = this.applyEffects(effects, commands)
 
         for (let i = 0, len = commands.length; i < len; i++) {
             const command = commands[i]
+
+            if (command.type == "effect") continue;
+
             const execute = this.executeMap[command.type]
             if (!execute) {
                 this.log("not found execute for command", command.type)
@@ -246,29 +272,30 @@ export class CardDeckComponent extends cc.Component {
         }
     }
 
-    private executeAttack(command: AttackCommand) {
+    private executeAttack(command: NormalCommand) {
         this.log("attacked by", command.value, "damage")
         this.addHP(-command.value)
     }
 
-    private executeEffect(command: EffectCommand) {
+    private executeSkipTurn(command: NormalCommand) {
         this.effects.push(command)
     }
 
-    private findCommandsByType<T>(commands: CardCommand[], type: string): T[] {
+    private findCommandsByType<T>(commands: NormalCommand[], type: string): T[] {
         return commands.filter(cmd => cmd.type === type) as T[]
     }
 
-    private applyBuff(buff: BuffCommand, cmd: CardCommand) {
+    private applyBuff(buff: BuffCommand, cmd: NormalCommand) {
         let addValue = buff.value
         if (buff.valueType === "percent") {
             addValue = cmd.value * buff.value
         }
-        this.log("use effect on", buff.on, "value", addValue)
+        const rawValue = buff.value + (buff.valueType == "percent" ? "%" : "")
+        this.log("use effect on", buff.on, "value", addValue, "raw", rawValue)
         cmd.value += addValue
     }
 
-    private applyEffects(effects: EffectCommand[], commands: CardCommand[]): CardCommand[] {
+    private applyEffects(effects: EffectCommand[], commands: NormalCommand[]): NormalCommand[] {
         for (let i = 0, len = commands.length; i < len; i++) {
             const command = commands[i]
             const targetEffects = effects.filter(eff => eff.buff.on === command.type)

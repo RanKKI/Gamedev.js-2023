@@ -1,13 +1,14 @@
 class CommandParser {
 
-    private parsers: { [key: string]: (components: string[]) => CardCommand } = {
+    private parsers: { [key: string]: (components: string[]) => NormalCommand } = {
 
     }
 
     constructor() {
-        this.parsers['attack'] = (components: string[]) => this.parserAttack(components)
-        this.parsers['energy'] = (components: string[]) => this.parserEnergy(components)
-        this.parsers['effect'] = (components: string[]) => this.parserEffect(components)
+        this.parsers['energy'] = (components: string[]) => this.parseNormalCommand(components)
+        this.parsers["attack"] = (components: string[]) => this.parseNormalCommand(components)
+        this.parsers["skipturn"] = (components: string[]) => this.parseNormalCommand(components)
+        this.parsers['effect'] = (components: string[]) => this.parseEffect(components)
     }
 
     /*
@@ -28,41 +29,34 @@ class CommandParser {
         return 'number'
     }
 
-    private parserAttack(components: string[]): AttackCommand {
+    private parseNormalCommand(components: string[]): NormalCommand {
         return {
-            type: 'attack',
-            value: parseInt(components[0])
+            type: components[0] as Commands,
+            value: parseInt(components[1])
         }
     }
 
-    private parserEnergy(components: string[]): EnergyCommand {
-        return {
-            type: 'energy',
-            value: parseInt(components[0])
-        }
-    }
-
-    private parserEffect(components: string[]): EffectCommand {
+    private parseEffect(components: string[]): EffectCommand {
         return {
             type: 'effect',
-            value: this.parsePercent(components[0]),
+            value: this.parsePercent(components[1]),
             buff: {
                 type: 'buff',
-                on: components[2] as Commands,
-                value: this.parsePercent(components[1]),
-                valueType: this.getValueType(components[1])
+                on: components[3] as Commands,
+                value: this.parsePercent(components[2]),
+                valueType: this.getValueType(components[2])
             }
         }
     }
 
-    parse(rawStr: string): CardCommand {
+    parse(rawStr: string): NormalCommand {
         const components = rawStr.split(' ')
         const type = components[0] as Commands
         const parser = this.parsers[type]
         if (!parser) {
             throw new Error('unknown command type: ' + type)
         }
-        return parser(components.slice(1, components.length))
+        return parser(components)
     }
 }
 
