@@ -1,13 +1,9 @@
 import { loadLocalRes } from "../manager/resources"
-
-interface Command {
-
-}
+import { cmdParser } from "./command-parser"
 
 class CardManager {
 
     private cardConfig: { [key: number]: Card }
-    private effectConfig: { [key: string]: CardEffect }
     private skillConfig: Skill[]
     private itemConfig: Item[]
 
@@ -70,6 +66,23 @@ class CardManager {
         console.log('load configs done')
     }
 
+    public convertToCommands(card: Card, level: number): CardCommand[] {
+        let effects = card.levels[level]
+        while (effects == null) {
+            level--;
+            effects = card.levels[level]
+        }
+        if (effects == null) {
+            throw new Error('no effect for card ' + card.id + ' level ' + level)
+        }
+
+        const result: CardCommand[] = []
+        for (const effect of effects) {
+            result.push(cmdParser.parse(effect))
+        }
+
+        return result
+    }
 }
 
 export const cardConfigManager = new CardManager()

@@ -28,12 +28,10 @@ export default class GameLayer extends BaseLayer {
     }
 
     async testPanel() {
-        console.log("GameLayer testPanel")
         await UI.openPanel("prefab/common/confirm-panel", null)
     }
 
     protected start(): void {
-        console.log("GameLayer start")
         this.playerDeck.setMode(CardDeckMode.Player)
         this.oppositeDeck.setMode(CardDeckMode.Computer)
         gameEvent.on((arg) => this.onGameEvent(arg.name, arg.data))
@@ -60,8 +58,10 @@ export default class GameLayer extends BaseLayer {
         /* 设置卡组 */
         const cards = await this.selectCards()
 
-        p1.prepare(cards)
-        p2.prepare(cards.reverse())
+        await Promise.all([
+            p1.prepare(cards),
+            p2.prepare(cards.reverse())
+        ])
 
         let isPlayerWin = false
         while (!p1.isDead() && !p2.isDead()) {

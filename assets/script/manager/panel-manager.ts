@@ -135,9 +135,6 @@ export class PanelManager extends cc.Component {
         node.setParent(this.container)
         comp.show(data)
         this.ensureMask()
-        console.log("open panel", path)
-        console.log("panel list", this.panelList)
-        console.log("parent", node.parent.name)
         layerEvent.emit({ comp: comp })
         stashLocker()
         return new Promise(resolve => {

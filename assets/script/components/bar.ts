@@ -13,14 +13,12 @@ export class BarComponent extends cc.Component {
     private _value: number = 0;
 
     protected start(): void {
-        console.log("BarComponent start")
         this.setPercentage(1, false);
     }
 
     public setPercentage(value: number, withAnima?: boolean) {
         this._value = value;
         const target =  5 + (this.node.width - 10) * value;
-        console.log("setPercentage", value, "width", target);
         if(!withAnima) {
             this.mask.width = target;
             return;

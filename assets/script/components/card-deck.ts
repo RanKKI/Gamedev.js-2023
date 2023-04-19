@@ -1,11 +1,12 @@
 import "cc";
 import { CardComponent } from "./card";
 import { objectPool } from "../common/object-pool";
-import { getLocalTouchPos, randomChoice, randomChoiceOne, sleep } from "../common";
+import { getLocalTouchPos, random, randomChoice, randomChoiceOne, sleep } from "../common";
 import { GameEvent, gameEvent } from "../common/event/events";
 import { UI } from "../manager/ui-manager"
 import LinkPrefab from "./ext/linked-prefab";
 import { BarComponent } from "./bar";
+import { cardConfigManager } from "../game-logic/card-manager";
 const { ccclass, property, menu } = cc._decorator;
 
 export enum CardDeckMode {
@@ -30,23 +31,21 @@ export class CardDeckComponent extends cc.Component {
             return;
         }
         this.mode = mode;
-        this.createCard()
+    }
+
+    private log(...msg: (string | number | boolean)[]) {
+        console.log(`[Player ${this.mode}]`, ...msg)
     }
 
     protected start(): void {
-        console.log("CardDeckComponent start")
+
     }
 
     /* 初始化牌组 */
     private async createCard() {
-        for (let i = 0; i < 7; i++) {
-            const cardNode = await objectPool.cardPool.get()
-            this.deck.addChild(cardNode)
-            const card = cardNode.getComponent(CardComponent)
-            card.setIsVisible(this.mode === CardDeckMode.Player)
-            this.cards.push(card)
+        for (let i = 0; i < 5; i++) {
+            await this.drawCard()
         }
-        this.reorderCard(false)
     }
 
     private async reorderCard(withAnima = true) {
@@ -100,7 +99,7 @@ export class CardDeckComponent extends cc.Component {
         this.hpBar.setPercentage(this.HP / 100)
     }
 
-    private effects = []
+    private effects: EffectCommand[] = []
 
     /* 卡池 */
     private cardsPool: Card[] = []
@@ -108,10 +107,14 @@ export class CardDeckComponent extends cc.Component {
     private direction = -1
 
     private initCardsPool() {
-        this.nextCardIdx = this.cardsPool.length - 1
+        this.nextCardIdx = 0
+        this.direction = 1
     }
 
-    private getNextCard(): Card {
+    private getNextCardConf(): Card {
+        if (this.cardsPool.length <= 0) {
+            throw new Error("卡池为空")
+        }
         // 循环从 cardsPool 中取出卡牌
         const card = this.cardsPool[this.nextCardIdx]
         if (this.nextCardIdx <= 0) {
@@ -135,6 +138,8 @@ export class CardDeckComponent extends cc.Component {
         this.setHP(100)
         // 清空状态
         this.effects = []
+
+        await this.createCard()
     }
 
     /* 玩家从卡池中抽取一张卡牌 */
@@ -160,11 +165,8 @@ export class CardDeckComponent extends cc.Component {
         this.cards.push(card)
 
         // 配置 Card
-        const conf = this.getNextCard()
-        if (this.mode === CardDeckMode.Player) {
-            console.log("conf", conf.name)
-        }
-        card.setCard(conf)
+        const conf = this.getNextCardConf()
+        card.setCardConf(conf)
 
         await this.reorderCard(true)
     }
@@ -214,11 +216,71 @@ export class CardDeckComponent extends cc.Component {
             this.useCard(card),
             this.drawCard()
         ])
-        return []
+
+        let cmds = cardConfigManager.convertToCommands(card.conf, 1)
+        cmds = this.useEffect(cmds)
+        return cmds
+    }
+
+    private useEffect(cmds: CardCommand[]): CardCommand[] {
+        return cmds
+    }
+
+    private executeMap = {
+        "attack": (command: AttackCommand) => this.executeAttack(command),
+        "effect": (command: EffectCommand) => this.executeEffect(command),
     }
 
     public async execute(commands: CardCommand[]) {
-        this.addHP(-10)
+        const effects = this.findCommandsByType<EffectCommand>(commands, "effect")
+        commands = this.applyEffects(effects, commands)
+
+        for (let i = 0, len = commands.length; i < len; i++) {
+            const command = commands[i]
+            const execute = this.executeMap[command.type]
+            if (!execute) {
+                this.log("not found execute for command", command.type)
+                continue
+            }
+            execute(command)
+        }
+    }
+
+    private executeAttack(command: AttackCommand) {
+        this.log("attacked by", command.value, "damage")
+        this.addHP(-command.value)
+    }
+
+    private executeEffect(command: EffectCommand) {
+        this.effects.push(command)
+    }
+
+    private findCommandsByType<T>(commands: CardCommand[], type: string): T[] {
+        return commands.filter(cmd => cmd.type === type) as T[]
+    }
+
+    private applyBuff(buff: BuffCommand, cmd: CardCommand) {
+        let addValue = buff.value
+        if (buff.valueType === "percent") {
+            addValue = cmd.value * buff.value
+        }
+        this.log("use effect on", buff.on, "value", addValue)
+        cmd.value += addValue
+    }
+
+    private applyEffects(effects: EffectCommand[], commands: CardCommand[]): CardCommand[] {
+        for (let i = 0, len = commands.length; i < len; i++) {
+            const command = commands[i]
+            const targetEffects = effects.filter(eff => eff.buff.on === command.type)
+            // for targetEffects
+            for (let j = 0, len = targetEffects.length; j < len; j++) {
+                const effect = targetEffects[j]
+                if (random(0, 1) > effect.value) continue
+                const buff = effect.buff
+                this.applyBuff(buff, command)
+            }
+        }
+        return commands
     }
 
 }

@@ -76,7 +76,6 @@ export class CardComponent extends cc.Component {
 
     public beforeMoving() {
         if (this.node == null) {
-            console.log("beforeMoving node is null")
             return;
         }
         this.currentAngle = this.node.angle;
@@ -117,8 +116,10 @@ export class CardComponent extends cc.Component {
         }
     }
 
-    public setCard(card: Card) {
+    public conf: Card = null;
 
+    public setCardConf(conf: Card) {
+        this.conf = conf
     }
 
     public recycle() {
@@ -134,6 +135,7 @@ export class CardComponent extends cc.Component {
         this.node.opacity = 255;
         this.cardNode.opacity = 255
         this.cardBg.opacity = 255
+        this.conf = null
     }
 
 }
