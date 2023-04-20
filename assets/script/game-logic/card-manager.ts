@@ -33,15 +33,7 @@ class CardManager {
                 name: rawCard.name,
                 description: rawCard.description,
                 resource: rawCard.resource,
-                levels: {},
-            }
-            for (const level in rawCard.levels) {
-                const rawLevel = rawCard.levels[level]
-                if (typeof rawLevel === 'string') {
-                    card.levels[level] = [rawLevel]
-                } else {
-                    card.levels[level] = rawLevel
-                }
+                effects: Array.isArray(rawCard.effects) ? rawCard.effects : [rawCard.effects],
             }
             this.cardConfig[card.id] = card
         }
@@ -67,17 +59,12 @@ class CardManager {
     }
 
     public convertToCommands(card: Card, level: number): NormalCommand[] {
-        let effects = card.levels[level]
-        while (effects == null) {
-            level--;
-            effects = card.levels[level]
-        }
-        if (effects == null) {
+        if (card.effects == null) {
             throw new Error('no effect for card ' + card.id + ' level ' + level)
         }
 
         const result: NormalCommand[] = []
-        for (const effect of effects) {
+        for (const effect of card.effects) {
             result.push(cmdParser.parse(effect))
         }
 

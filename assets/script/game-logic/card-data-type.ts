@@ -13,11 +13,11 @@ interface Card {
     name: string
     description: string
     resource: string
-    levels: { [key: number]: string[] }
+    effects: string[]
 }
 
-interface RawCard extends Omit<Card, 'levels'> {
-    levels: { [key: number]: string[] | string }
+interface RawCard extends Omit<Card, 'effects'> {
+    effects: string[] | string
 }
 
 type UserCardData = {
