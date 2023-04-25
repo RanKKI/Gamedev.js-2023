@@ -233,7 +233,7 @@ export class CardDeckComponent extends cc.Component {
 
         this.log("Play card", card.conf.name)
 
-        const centerPos = cc.v2(0, 50)
+        const centerPos = cc.v2(0, 0)
 
         UI.getTopLayer().node.convertToWorldSpaceAR(centerPos, centerPos);//世界坐标
         card.node.parent.convertToNodeSpaceAR(centerPos, centerPos);//本地坐标
