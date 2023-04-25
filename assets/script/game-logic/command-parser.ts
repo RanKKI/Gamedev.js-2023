@@ -5,10 +5,12 @@ class CommandParser {
     }
 
     constructor() {
-        this.parsers['energy'] = (components: string[]) => this.parseNormalCommand(components)
-        this.parsers["attack"] = (components: string[]) => this.parseNormalCommand(components)
-        this.parsers["skipturn"] = (components: string[]) => this.parseNormalCommand(components)
-        this.parsers["shield"] = (components: string[]) => this.parseNormalCommand(components)
+        // normal commands
+        const normalType = ['attack', 'energy', 'skipturn', 'block', 'strength', 'block_strength']
+        for (const type of normalType) {
+            this.parsers[type] = (components: string[]) => this.parseNormalCommand(components)
+        }
+
         this.parsers['effect'] = (components: string[]) => this.parseEffect(components)
     }
 

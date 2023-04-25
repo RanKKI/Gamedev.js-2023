@@ -1,22 +1,20 @@
 [
     {
         "id": 1,
-        "name": "Attack #1",
-        "description": "Attack #1",
+        "name": "Attack",
+        "description": "Deals 4 damage.",
         "resource": "card_1",
         "effects": [
-            "attack 10",
-            "effect 50% 10% attack"
+            "attack 4"
         ]
     },
     {
         "id": 2,
         "name": "Fearless",
-        "description": "Fearless",
+        "description": "Gains X-1 blocks (X is the number of strength your opponent has).",
         "resource": "card_4",
         "effects": [
-            "attack 5",
-            "effect 5% 20 attack"
+            "block_strength -1"
         ]
     },
     {
@@ -25,7 +23,16 @@
         "description": "Gain 2 blocks",
         "resource": "card_2",
         "effects": [
-            "shield 2"
+            "block 2"
+        ]
+    },
+    {
+        "id": 4,
+        "name": "Madness",
+        "description": "Gains 4 strength, be damaged by opponent by 1.",
+        "resource": "card_5",
+        "effects": [
+            "strength 4"
         ]
     }
 ]

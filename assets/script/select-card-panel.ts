@@ -49,6 +49,7 @@ export default class SelectCard extends BasePanel {
             cardConfigManager.getCard(1),
             cardConfigManager.getCard(2),
             cardConfigManager.getCard(3),
+            cardConfigManager.getCard(4),
         ]
         for (let i = 0; i < 5; i++) {
             // 从对象池中抽取一张卡牌

@@ -14,6 +14,18 @@ export enum CardDeckMode {
     Computer,
 }
 
+interface PlayerAttribute {
+    hp: number
+    block: number
+    strength: number
+}
+
+const DEFAULT_PLAYER_ATTRIBUTE: PlayerAttribute = {
+    block: 0,
+    strength: 0,
+    hp: 0,
+}
+
 @ccclass
 @menu("components/CardDeck")
 export class CardDeckComponent extends cc.Component {
@@ -92,23 +104,35 @@ export class CardDeckComponent extends cc.Component {
         return this.hpBarPrefab.getComponent(BarComponent)
     }
 
-    private HP = 0
-    private shield = 0
+    /*
+        玩家状态
+        Player Property
+     */
+    private playerAttributes: PlayerAttribute = { ...DEFAULT_PLAYER_ATTRIBUTE }
+
+    public getAttributes() {
+        return this.playerAttributes
+    }
+
+    private resetAttributes() {
+        this.playerAttributes = { ...DEFAULT_PLAYER_ATTRIBUTE }
+    }
 
     public isDead() {
-        return this.HP <= 0
+        return this.playerAttributes.hp <= 0
     }
 
     public addHP(value: number) {
         if (value == 0) return;
-        this.HP += value
-        this.hpBar.setPercentage(this.HP / 100, true)
-        this.log(`HP ${value > 0 ? "+" : "-"}${Math.abs(value)}, HP: ${this.HP}`)
+        this.playerAttributes.hp += value
+        const hp = this.playerAttributes.hp
+        this.hpBar.setPercentage(hp / 100, true)
+        this.log(`HP ${value > 0 ? "+" : "-"}${Math.abs(value)}, HP: ${hp}`)
     }
 
     public setHP(value: number) {
-        this.HP = value
-        this.hpBar.setPercentage(this.HP / 100)
+        this.playerAttributes.hp = value
+        this.hpBar.setPercentage(value / 100)
     }
 
     private effects: NormalCommand[] = []
@@ -116,12 +140,10 @@ export class CardDeckComponent extends cc.Component {
     /* 卡池 */
     private cardsPool: Card[] = []
     private nextCardIdx = 0
-    private direction = -1
 
     private resetCardsPool() {
         this.cardsPool = []
         this.nextCardIdx = 0
-        this.direction = 1
     }
 
     private getNextCardConf(): Card {
@@ -129,15 +151,8 @@ export class CardDeckComponent extends cc.Component {
             throw new Error("卡池为空")
         }
         // 循环从 cardsPool 中取出卡牌
-        const card = this.cardsPool[this.nextCardIdx]
-        if (this.nextCardIdx <= 0) {
-            this.direction = 1
-            this.nextCardIdx = 0
-        } else if (this.nextCardIdx >= this.cardsPool.length - 1) {
-            this.direction = -1
-            this.nextCardIdx = this.cardsPool.length - 1
-        }
-        this.nextCardIdx += this.direction
+        const card = this.cardsPool[this.nextCardIdx % this.cardsPool.length]
+        this.nextCardIdx++
         return card
     }
 
@@ -147,11 +162,12 @@ export class CardDeckComponent extends cc.Component {
         // 设置卡组
         this.resetCardsPool()
         this.cardsPool = [...cardsPool]
+
+        // 清空状态
+        this.resetAttributes()
+        this.effects = []
         // 恢复 HP
         this.setHP(100)
-        this.shield = 0
-        // 清空状态
-        this.effects = []
 
         await this.createCard()
 
@@ -200,11 +216,13 @@ export class CardDeckComponent extends cc.Component {
         await Promise.all(tasks)
     }
 
-    public async play(): Promise<NormalCommand[]> {
+    public async play(otherPlayerAttributed: PlayerAttribute): Promise<NormalCommand[]> {
         if (this.needsSkip()) {
             this.log("Skip this turn")
             return []
         }
+
+        this.beforeUseCard()
 
         const card = this.cards.splice(0, 1)[0]
         // move card to center of table
@@ -237,14 +255,37 @@ export class CardDeckComponent extends cc.Component {
         ])
 
         let commands = cardConfigManager.convertToCommands(card.conf);
-        commands = this.applySelfCommands(commands)
+        commands = this.applySelfCommands(commands, otherPlayerAttributed)
+        commands = this.applyEffectBeforeUseCard(commands, otherPlayerAttributed)
         return commands
     }
 
-    private applySelfCommands(commands: NormalCommand[]) {
-        const selfCmdTypes = ["shield"]
+    private beforeUseCard() {
+        // 每回合 -1
+        if (this.playerAttributes.strength > 0) {
+            this.playerAttributes.strength = Math.max(0, this.playerAttributes.strength - 1)
+            this.log("reduce strength by 1, now = ", this.playerAttributes.strength)
+        }
+
+    }
+
+    private applyEffectBeforeUseCard(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
+        for (const cmd of commands) {
+            const strength = this.playerAttributes.strength
+            const val = cmd.value
+            if (cmd.type === "attack" && strength > 0) {
+                cmd.value += strength
+                this.log("Apply strength", strength, `, increased attack from ${val} to ${cmd.value}`)
+                this.playerAttributes.strength = 0
+            }
+        }
+        return commands
+    }
+
+    private applySelfCommands(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
+        const selfCmdTypes = ["block", "block_strength", "strength"]
         const selfCommands = this.findCommandsByType<NormalCommand>(commands, selfCmdTypes)
-        this.callCommands(selfCommands)
+        this.callCommands(selfCommands, otherPlayerAttributed)
         return commands.filter(v => !selfCmdTypes.includes(v.type))
     }
 
@@ -260,15 +301,15 @@ export class CardDeckComponent extends cc.Component {
         return false
     }
 
-    public async execute(commands: NormalCommand[]) {
+    public async execute(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
         const effects = this.findCommandsByType<EffectCommand>(commands, "effect")
         commands = this.applyEffects(effects, commands)
         // filter type not include effect
         commands = commands.filter(v => v.type !== "effect")
-        this.callCommands(commands)
+        this.callCommands(commands, otherPlayerAttributed)
     }
 
-    private callCommands(commands: NormalCommand[]) {
+    private callCommands(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
         for (let i = 0, len = commands.length; i < len; i++) {
             const command = commands[i]
             let execute = this[`execute_${command.type}`]
@@ -276,23 +317,28 @@ export class CardDeckComponent extends cc.Component {
                 this.log("not found execute for command", command.type)
                 continue
             }
-            execute.call(this, command)
+            execute.call(this, command, otherPlayerAttributed)
         }
     }
 
     private execute_attack(command: NormalCommand) {
         let damage = command.value
-        if (this.shield > 0) {
-            this.log("shield", this.shield, "damage")
-            if (this.shield >= damage) {
-                this.shield -= damage
+        let block = this.playerAttributes.block
+        if (block > 0) {
+            if (block >= damage) {
+                block -= damage
                 damage = 0
             } else {
-                damage -= this.shield
-                this.shield = 0
+                damage -= block
+                block = 0
             }
         }
-        this.log("attacked by", damage, "damage")
+        this.playerAttributes.block = block
+        if (damage != command.value) {
+            this.log("attacked by", damage, "damage", `(origin damage = ${command.value})`)
+        } else {
+            this.log("attacked by", damage, "damage")
+        }
         this.addHP(-damage)
     }
 
@@ -300,9 +346,21 @@ export class CardDeckComponent extends cc.Component {
         this.effects.push(command)
     }
 
-    private execute_shield(command: NormalCommand) {
-        this.log("add shield", command.value)
-        this.shield += command.value
+    private execute_block(command: NormalCommand) {
+        const block = Math.max(0, command.value)
+        this.log("add block", block)
+        this.playerAttributes.block += block
+    }
+
+    private execute_block_strength(command: NormalCommand, playerAttributes: PlayerAttribute) {
+        const block = Math.max(0, command.value + playerAttributes.strength)
+        this.log("add block", block)
+        this.playerAttributes.block += block
+    }
+
+    private execute_strength(command: NormalCommand) {
+        this.log("add strength", command.value)
+        this.playerAttributes.strength += command.value
     }
 
     private findCommandsByType<T>(commands: NormalCommand[], type: string | string[]): T[] {

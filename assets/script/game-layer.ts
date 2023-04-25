@@ -65,14 +65,14 @@ export default class GameLayer extends BaseLayer {
             p1.setRound(round)
             p2.setRound(round)
 
-            const cmd = await p1.play()
-            await p2.execute(cmd)
+            const cmd = await p1.play(p2.getAttributes())
+            await p2.execute(cmd, p2.getAttributes())
             if (p2.isDead()) {
                 isPlayerWin = true
                 break
             }
-            const cmd1 = await p2.play()
-            await p1.execute(cmd1)
+            const cmd1 = await p2.play(p1.getAttributes())
+            await p1.execute(cmd1, p1.getAttributes())
             if (p1.isDead()) break
 
             round++

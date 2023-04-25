@@ -26,7 +26,7 @@ type UserCardData = {
 }[]
 
 
-type Commands = 'attack' | 'effect' | 'buff' | "energy" | "skipturn";
+type Commands = 'attack' | 'effect' | 'buff' | "energy" | "skipturn" | "block" | "strength";
 
 interface NormalCommand {
     type: Commands,
