@@ -1,4 +1,3 @@
-import "cc";
 import { UI } from "./manager/ui-manager";
 import { userData } from "./user/userdata";
 import { cardConfigManager } from "./game-logic/card-manager";

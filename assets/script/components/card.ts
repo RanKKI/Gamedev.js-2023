@@ -1,4 +1,3 @@
-import "cc";
 import { getLocalTouchPos } from "../common";
 import { loadRes } from "../manager/resources";
 

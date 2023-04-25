@@ -1,6 +1,4 @@
-import "cc";
 import { getLocalTouchPos } from "../common";
-import { CardComponent } from "./card";
 
 const { ccclass, property, menu } = cc._decorator;
 

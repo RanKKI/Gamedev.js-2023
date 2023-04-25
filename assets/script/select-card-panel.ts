@@ -1,4 +1,3 @@
-import "cc"
 import BasePanel from "./components/base/base-panel"
 import { CardPlaceholderComponent } from "./components/card-placeholder"
 import LinkPrefab from "./components/ext/linked-prefab"

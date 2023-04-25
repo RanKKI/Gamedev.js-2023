@@ -1,6 +1,3 @@
-import "cc";
-import { getLocalTouchPos } from "../common";
-
 const { ccclass, property, menu } = cc._decorator;
 
 @ccclass

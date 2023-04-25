@@ -1,4 +1,3 @@
-import "cc"
 import { UI } from "./manager/ui-manager"
 import BaseLayer from "./components/base/base-layer"
 import LinkPrefab from "./components/ext/linked-prefab"

@@ -1,12 +1,10 @@
-import "cc";
-import { CardComponent } from "./card";
+import { random, sleep } from "../common";
 import { objectPool } from "../common/object-pool";
-import { getLocalTouchPos, random, randomChoice, randomChoiceOne, sleep } from "../common";
-import { GameEvent, gameEvent } from "../common/event/events";
-import { UI } from "../manager/ui-manager"
-import LinkPrefab from "./ext/linked-prefab";
-import { BarComponent } from "./bar";
 import { cardConfigManager } from "../game-logic/card-manager";
+import { UI } from "../manager/ui-manager";
+import { BarComponent } from "./bar";
+import { CardComponent } from "./card";
+import LinkPrefab from "./ext/linked-prefab";
 const { ccclass, property, menu } = cc._decorator;
 
 export enum CardDeckMode {
