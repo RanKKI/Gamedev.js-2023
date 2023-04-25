@@ -14,6 +14,11 @@ export enum CardDeckMode {
     Computer,
 }
 
+const TriggerType = {
+    None: 0,
+    UsedStrength: 1 << 1,
+}
+
 interface PlayerAttribute {
     hp: number
     block: number
@@ -257,16 +262,27 @@ export class CardDeckComponent extends cc.Component {
         let commands = cardConfigManager.convertToCommands(card.conf);
         commands = this.applySelfCommands(commands, otherPlayerAttributed)
         commands = this.applyEffectBeforeUseCard(commands, otherPlayerAttributed)
+
+        this.afterUseCard()
+
         return commands
     }
 
+    private triggers = TriggerType.None
     private beforeUseCard() {
+        this.triggers = TriggerType.None
         // 每回合 -1
         if (this.playerAttributes.strength > 0) {
             this.playerAttributes.strength = Math.max(0, this.playerAttributes.strength - 1)
             this.log("reduce strength by 1, now = ", this.playerAttributes.strength)
         }
+    }
 
+    private afterUseCard() {
+        if (this.triggers & TriggerType.UsedStrength) {
+            this.log("Used strength, reset strength to 0")
+            this.playerAttributes.strength = 0
+        }
     }
 
     private applyEffectBeforeUseCard(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
@@ -276,7 +292,6 @@ export class CardDeckComponent extends cc.Component {
             if (cmd.type === "attack" && strength > 0) {
                 cmd.value += strength
                 this.log("Apply strength", strength, `, increased attack from ${val} to ${cmd.value}`)
-                this.playerAttributes.strength = 0
             }
         }
         return commands
