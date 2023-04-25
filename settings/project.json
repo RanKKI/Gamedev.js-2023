@@ -4,7 +4,17 @@
       true
     ]
   ],
-  "excluded-modules": [],
+  "excluded-modules": [
+    "DragonBones",
+    "Physics",
+    "ParticleSystem",
+    "Spine Skeleton",
+    "3D",
+    "3D Primitive",
+    "3D Physics/cannon.js",
+    "3D Physics/Builtin",
+    "3D Particle"
+  ],
   "group-list": [
     "default"
   ],
@@ -15,12 +25,12 @@
   "fit-height": true,
   "use-project-simulator-setting": false,
   "simulator-orientation": false,
-  "use-customize-simulator": false,
+  "use-customize-simulator": true,
   "simulator-resolution": {
     "width": 960,
     "height": 640
   },
-  "last-module-event-record-time": 1681737182565,
+  "last-module-event-record-time": 1682427485526,
   "assets-sort-type": "name",
   "facebook": {
     "enable": false,
@@ -31,5 +41,7 @@
     "audience": {
       "enable": false
     }
-  }
+  },
+  "preview-port": 7456,
+  "clear-simulator-cache": true
 }
