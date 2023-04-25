@@ -93,16 +93,17 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private HP = 0
+    private shield = 0
 
     public isDead() {
         return this.HP <= 0
     }
 
     public addHP(value: number) {
-        if(value == 0) return;
+        if (value == 0) return;
         this.HP += value
         this.hpBar.setPercentage(this.HP / 100, true)
-        this.log(`HP ${value > 0 ? "+": "-"}${Math.abs(value)}, HP: ${this.HP}`)
+        this.log(`HP ${value > 0 ? "+" : "-"}${Math.abs(value)}, HP: ${this.HP}`)
     }
 
     public setHP(value: number) {
@@ -148,6 +149,7 @@ export class CardDeckComponent extends cc.Component {
         this.cardsPool = [...cardsPool]
         // 恢复 HP
         this.setHP(100)
+        this.shield = 0
         // 清空状态
         this.effects = []
 
@@ -234,7 +236,16 @@ export class CardDeckComponent extends cc.Component {
             this.drawCard()
         ])
 
-        return cardConfigManager.convertToCommands(card.conf, 1);
+        let commands = cardConfigManager.convertToCommands(card.conf);
+        commands = this.applySelfCommands(commands)
+        return commands
+    }
+
+    private applySelfCommands(commands: NormalCommand[]) {
+        const selfCmdTypes = ["shield"]
+        const selfCommands = this.findCommandsByType<NormalCommand>(commands, selfCmdTypes)
+        this.callCommands(selfCommands)
+        return commands.filter(v => !selfCmdTypes.includes(v.type))
     }
 
     private needsSkip(): boolean {
@@ -249,40 +260,54 @@ export class CardDeckComponent extends cc.Component {
         return false
     }
 
-    private executeMap: { [key: string]: (command: NormalCommand) => void } = {
-        "attack": (command: NormalCommand) => this.executeAttack(command),
-        "skipturn": (command: NormalCommand) => this.executeSkipTurn(command),
-    }
-
     public async execute(commands: NormalCommand[]) {
         const effects = this.findCommandsByType<EffectCommand>(commands, "effect")
         commands = this.applyEffects(effects, commands)
+        // filter type not include effect
+        commands = commands.filter(v => v.type !== "effect")
+        this.callCommands(commands)
+    }
 
+    private callCommands(commands: NormalCommand[]) {
         for (let i = 0, len = commands.length; i < len; i++) {
             const command = commands[i]
-
-            if (command.type == "effect") continue;
-
-            const execute = this.executeMap[command.type]
+            let execute = this[`execute_${command.type}`]
             if (!execute) {
                 this.log("not found execute for command", command.type)
                 continue
             }
-            execute(command)
+            execute.call(this, command)
         }
     }
 
-    private executeAttack(command: NormalCommand) {
-        this.log("attacked by", command.value, "damage")
-        this.addHP(-command.value)
+    private execute_attack(command: NormalCommand) {
+        let damage = command.value
+        if (this.shield > 0) {
+            this.log("shield", this.shield, "damage")
+            if (this.shield >= damage) {
+                this.shield -= damage
+                damage = 0
+            } else {
+                damage -= this.shield
+                this.shield = 0
+            }
+        }
+        this.log("attacked by", damage, "damage")
+        this.addHP(-damage)
     }
 
-    private executeSkipTurn(command: NormalCommand) {
+    private execute_skipturn(command: NormalCommand) {
         this.effects.push(command)
     }
 
-    private findCommandsByType<T>(commands: NormalCommand[], type: string): T[] {
-        return commands.filter(cmd => cmd.type === type) as T[]
+    private execute_shield(command: NormalCommand) {
+        this.log("add shield", command.value)
+        this.shield += command.value
+    }
+
+    private findCommandsByType<T>(commands: NormalCommand[], type: string | string[]): T[] {
+        const typeArr = Array.isArray(type) ? type : [type]
+        return commands.filter(cmd => typeArr.findIndex((v) => v == cmd.type) >= 0) as T[]
     }
 
     private applyBuff(buff: BuffCommand, cmd: NormalCommand) {

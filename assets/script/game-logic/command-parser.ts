@@ -8,6 +8,7 @@ class CommandParser {
         this.parsers['energy'] = (components: string[]) => this.parseNormalCommand(components)
         this.parsers["attack"] = (components: string[]) => this.parseNormalCommand(components)
         this.parsers["skipturn"] = (components: string[]) => this.parseNormalCommand(components)
+        this.parsers["shield"] = (components: string[]) => this.parseNormalCommand(components)
         this.parsers['effect'] = (components: string[]) => this.parseEffect(components)
     }
 

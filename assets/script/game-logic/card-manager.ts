@@ -58,9 +58,9 @@ class CardManager {
         console.log('load configs done')
     }
 
-    public convertToCommands(card: Card, level: number): NormalCommand[] {
+    public convertToCommands(card: Card): NormalCommand[] {
         if (card.effects == null) {
-            throw new Error('no effect for card ' + card.id + ' level ' + level)
+            throw new Error('no effect for card ' + card.id)
         }
 
         const result: NormalCommand[] = []
