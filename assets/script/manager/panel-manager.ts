@@ -62,7 +62,6 @@ export class PanelManager extends cc.Component {
         panelResult: PanelShowResult,
         values?: K
     }> {
-        debugger
 
         opt = opt ?? {}
 

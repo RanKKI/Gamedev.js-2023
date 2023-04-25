@@ -1,5 +1,6 @@
 import "cc";
 import { getLocalTouchPos } from "../common";
+import { loadRes } from "../manager/resources";
 
 const { ccclass, property, menu } = cc._decorator;
 
@@ -18,6 +19,9 @@ export class CardComponent extends cc.Component {
 
     @property(cc.PolygonCollider)
     public collider: cc.PolygonCollider = null;
+
+    @property(cc.Sprite)
+    public cardSprite: cc.Sprite = null;
 
     private isVisible: boolean = false;
     private bSelected: boolean = false;
@@ -74,6 +78,13 @@ export class CardComponent extends cc.Component {
     private currentPos: cc.Vec3 = null;
     private currentZIndex: number = 0;
 
+    public getDataBeforeMoving() {
+        return {
+            "pos": this.currentPos,
+            "zIndex": this.currentZIndex
+        }
+    }
+
     public beforeMoving() {
         if (this.node == null) {
             return;
@@ -97,15 +108,11 @@ export class CardComponent extends cc.Component {
         }
     }
 
-    private getScaledHeight(): number {
-        return this.node.height * this.node.scaleY;
-    }
-
     public updateMoving(evt: cc.Event.EventTouch) {
         let touchPos = evt.getLocation()
         cc.Camera.main.getScreenToWorldPoint(touchPos, touchPos);//世界坐标
         this.node.parent.convertToNodeSpaceAR(touchPos, touchPos);//本地坐标
-        this.node.setPosition(touchPos.add(cc.v2(0, -this.getScaledHeight() / 2)))
+        this.node.setPosition(touchPos)
     }
 
     public afterMoving(restore: boolean) {
@@ -120,6 +127,10 @@ export class CardComponent extends cc.Component {
 
     public setCardConf(conf: Card) {
         this.conf = conf
+        loadRes(`ui/card/${conf.resource}`, cc.SpriteFrame)
+            .then((spriteFrame: cc.SpriteFrame) => {
+                this.cardSprite.spriteFrame = spriteFrame
+            })
     }
 
     public recycle() {

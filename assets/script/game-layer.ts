@@ -43,15 +43,8 @@ export default class GameLayer extends BaseLayer {
     }
 
     private async selectCards(): Promise<Card[]> {
-        const conf = cardConfigManager
-        return [
-            conf.getCard(1),
-            conf.getCard(2),
-            conf.getCard(2),
-            conf.getCard(2),
-            conf.getCard(3),
-            conf.getCard(4),
-        ]
+        const ret = await UI.openPanel("prefab/select-card-panel", null)
+        return ret.values as Card[]
     }
 
     @touchLocker

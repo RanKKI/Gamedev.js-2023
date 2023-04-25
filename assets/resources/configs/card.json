@@ -3,7 +3,7 @@
         "id": 1,
         "name": "Attack #1",
         "description": "Attack #1",
-        "resource": "attack",
+        "resource": "card_1",
         "effects": [
             "attack 10",
             "effect 50% 10% attack"
@@ -11,9 +11,9 @@
     },
     {
         "id": 2,
-        "name": "Attack #2",
-        "description": "Attack #2",
-        "resource": "attack",
+        "name": "Fearless",
+        "description": "Fearless",
+        "resource": "card_4",
         "effects": [
             "attack 5",
             "effect 5% 20 attack"
@@ -21,28 +21,11 @@
     },
     {
         "id": 3,
-        "name": "Energy",
-        "description": "Add energy to shield",
-        "resource": "energy",
+        "name": "Shield",
+        "description": "Gain 2 blocks",
+        "resource": "card_2",
         "effects": [
-            "energy 1"
-        ]
-    },
-    {
-        "id": 4,
-        "name": "Skip Card",
-        "description": "Skip one enemy turn",
-        "resource": "skip",
-        "effects": "skipturn"
-    },
-    {
-        "id": 5,
-        "name": "Berserker",
-        "description": "some description",
-        "resource": "berserker",
-        "effects": [
-            "attack 3",
-            "strength 2"
+            "shield 2"
         ]
     }
 ]

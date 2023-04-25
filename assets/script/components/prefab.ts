@@ -1,5 +1,6 @@
 export interface PanelPrefab {
     "prefab/common/confirm-panel": null,
+    "prefab/select-card-panel": null,
 }
 
 
