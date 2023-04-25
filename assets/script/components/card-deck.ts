@@ -24,10 +24,11 @@ interface PlayerAttribute {
     strength: number
 }
 
+const MAX_HP = 40
 const DEFAULT_PLAYER_ATTRIBUTE: PlayerAttribute = {
     block: 0,
     strength: 0,
-    hp: 0,
+    hp: MAX_HP,
 }
 
 @ccclass
@@ -131,13 +132,13 @@ export class CardDeckComponent extends cc.Component {
         if (value == 0) return;
         this.playerAttributes.hp += value
         const hp = this.playerAttributes.hp
-        this.hpBar.setPercentage(hp / 100, true)
+        this.hpBar.setPercentage(hp / MAX_HP, true)
         this.log(`HP ${value > 0 ? "+" : "-"}${Math.abs(value)}, HP: ${hp}`)
     }
 
     public setHP(value: number) {
         this.playerAttributes.hp = value
-        this.hpBar.setPercentage(value / 100)
+        this.hpBar.setPercentage(value / MAX_HP)
     }
 
     private effects: NormalCommand[] = []
@@ -171,8 +172,6 @@ export class CardDeckComponent extends cc.Component {
         // 清空状态
         this.resetAttributes()
         this.effects = []
-        // 恢复 HP
-        this.setHP(100)
 
         await this.createCard()
 
