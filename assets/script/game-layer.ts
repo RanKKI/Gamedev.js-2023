@@ -35,6 +35,7 @@ export default class GameLayer extends BaseLayer {
         this.playerDeck.setMode(CardDeckMode.Player)
         this.oppositeDeck.setMode(CardDeckMode.Computer)
         gameEvent.on((arg) => this.onGameEvent(arg.name, arg.data))
+        this.startGame()
     }
 
     /* 处理回合 */

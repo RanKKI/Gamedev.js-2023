@@ -43,5 +43,15 @@
         "effects": [
             "vengeance"
         ]
+    },
+    {
+        "id": 6,
+        "name": "Berserker",
+        "description": "Deals 3 damage and gains 3 strength.",
+        "resource": "card_3",
+        "effects": [
+            "attack 3",
+            "strength 3"
+        ]
     }
 ]

@@ -29,8 +29,8 @@ export default class SelectCard extends BasePanel {
     }
 
     protected async playEnterAnima(duration: number) {
-        this.initHolders(5)
-        await this.createCards()
+        this.initHolders(6)
+        await this.createCards(6)
         await this.playCardsAnimation(true)
         this.addListeners()
     }
@@ -44,15 +44,16 @@ export default class SelectCard extends BasePanel {
         }
     }
 
-    private async createCards() {
+    private async createCards(numOfCards: number) {
         const cardConfigs = [
             cardConfigManager.getCard(1),
             cardConfigManager.getCard(2),
             cardConfigManager.getCard(3),
             cardConfigManager.getCard(4),
             cardConfigManager.getCard(5),
+            cardConfigManager.getCard(6),
         ]
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < numOfCards; i++) {
             // 从对象池中抽取一张卡牌
             const cardNode = await objectPool.cardPool.get()
 
