@@ -17,6 +17,7 @@ export enum CardDeckMode {
 const TriggerType = {
     None: 0,
     UsedStrength: 1 << 1,
+    HPChanged: 1 << 2,
 }
 
 interface PlayerAttribute {
@@ -121,6 +122,7 @@ export class CardDeckComponent extends cc.Component {
 
     private resetAttributes() {
         this.playerAttributes = { ...DEFAULT_PLAYER_ATTRIBUTE }
+        this.triggers = TriggerType.None
     }
 
     public isDead() {
@@ -269,8 +271,20 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private triggers = TriggerType.None
+
+    private addTrigger(trigger: number) {
+        this.triggers |= trigger
+    }
+
+    private removeTrigger(trigger: number) {
+        this.triggers &= ~trigger
+    }
+
+    private isTrigger(trigger: number) {
+        return (this.triggers & trigger) !== 0
+    }
+
     private beforeUseCard() {
-        this.triggers = TriggerType.None
         // 每回合 -1
         if (this.playerAttributes.strength > 0) {
             this.playerAttributes.strength = Math.max(0, this.playerAttributes.strength - 1)
@@ -279,7 +293,8 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private afterUseCard() {
-        if (this.triggers & TriggerType.UsedStrength) {
+        if (this.isTrigger(TriggerType.UsedStrength)) {
+            this.removeTrigger(TriggerType.UsedStrength)
             this.log("Used strength, reset strength to 0")
             this.playerAttributes.strength = 0
         }
@@ -291,6 +306,7 @@ export class CardDeckComponent extends cc.Component {
             const val = cmd.value
             if (cmd.type === "attack" && strength > 0) {
                 cmd.value += strength
+                this.addTrigger(TriggerType.UsedStrength)
                 this.log("Apply strength", strength, `, increased attack from ${val} to ${cmd.value}`)
             }
         }
@@ -298,10 +314,13 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private applySelfCommands(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
-        const selfCmdTypes = ["block", "block_strength", "strength"]
+        const selfCmdTypes = ["block", "block_strength", "strength", "vengeance"]
         const selfCommands = this.findCommandsByType<NormalCommand>(commands, selfCmdTypes)
-        this.callCommands(selfCommands, otherPlayerAttributed)
-        return commands.filter(v => !selfCmdTypes.includes(v.type))
+        const newCommands = this.callCommands(selfCommands, otherPlayerAttributed)
+        return [
+            ...commands.filter(v => !selfCmdTypes.includes(v.type)),
+            ...newCommands
+        ]
     }
 
     private needsSkip(): boolean {
@@ -317,14 +336,24 @@ export class CardDeckComponent extends cc.Component {
     }
 
     public async execute(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
+
+        const attributes = { ...this.playerAttributes }
+
         const effects = this.findCommandsByType<EffectCommand>(commands, "effect")
         commands = this.applyEffects(effects, commands)
         // filter type not include effect
         commands = commands.filter(v => v.type !== "effect")
         this.callCommands(commands, otherPlayerAttributed)
+
+        if (this.playerAttributes.hp != attributes.hp) {
+            this.addTrigger(TriggerType.HPChanged)
+        } else {
+            this.removeTrigger(TriggerType.HPChanged)
+        }
     }
 
     private callCommands(commands: NormalCommand[], otherPlayerAttributed: PlayerAttribute) {
+        let newCommands: NormalCommand[] = []
         for (let i = 0, len = commands.length; i < len; i++) {
             const command = commands[i]
             let execute = this[`execute_${command.type}`]
@@ -332,8 +361,12 @@ export class CardDeckComponent extends cc.Component {
                 this.log("not found execute for command", command.type)
                 continue
             }
-            execute.call(this, command, otherPlayerAttributed)
+            const newCommand = execute.call(this, command, otherPlayerAttributed)
+            if (newCommand) {
+                newCommands.push(newCommand)
+            }
         }
+        return newCommands
     }
 
     private execute_attack(command: NormalCommand) {
@@ -376,6 +409,16 @@ export class CardDeckComponent extends cc.Component {
     private execute_strength(command: NormalCommand) {
         this.log("add strength", command.value)
         this.playerAttributes.strength += command.value
+    }
+
+    private execute_vengeance(command: NormalCommand): NormalCommand {
+        // If health is reduced last turn, deals 6 damage, otherwise, deals 3 damage.
+        const damage = this.isTrigger(TriggerType.HPChanged) ? 6 : 3
+        this.log(`Vengeance triggered, deal ${damage}  damage to enemy`)
+        return {
+            type: "attack",
+            value: damage,
+        }
     }
 
     private findCommandsByType<T>(commands: NormalCommand[], type: string | string[]): T[] {

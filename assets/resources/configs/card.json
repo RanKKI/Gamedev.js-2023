@@ -34,5 +34,14 @@
         "effects": [
             "strength 4"
         ]
+    },
+    {
+        "id": 5,
+        "name": "Vengeance",
+        "description": "If health is reduced last turn, deals 6 damage, otherwise, deals 3 damage.",
+        "resource": "card_6",
+        "effects": [
+            "vengeance"
+        ]
     }
 ]
