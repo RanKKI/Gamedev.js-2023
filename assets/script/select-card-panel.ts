@@ -8,6 +8,8 @@ import { cardConfigManager } from "./game-logic/card-manager"
 
 const { ccclass, property, menu } = cc._decorator
 
+const NUM_OF_CARDS = 6
+
 @ccclass
 @menu("panel/SelectCard")
 export default class SelectCard extends BasePanel {
@@ -21,15 +23,23 @@ export default class SelectCard extends BasePanel {
     @property(cc.Node)
     public holdingCard: cc.Node = null
 
+    @property(cc.Node)
+    public confirmButton: cc.Node = null
+
     private cards: CardComponent[] = []
 
     private get cardPlaceholders(): CardPlaceholderComponent[] {
         return this.cardPlaceholdersRaw.map((v) => v.getComponent(CardPlaceholderComponent))
     }
 
+    protected start(): void {
+        this.refreshButton(false)
+        super.start()
+    }
+
     protected async playEnterAnima(duration: number) {
-        this.initHolders(6)
-        await this.createCards(6)
+        this.initHolders(NUM_OF_CARDS)
+        await this.createCards(NUM_OF_CARDS)
         await this.playCardsAnimation(true)
         this.addListeners()
     }
@@ -166,6 +176,10 @@ export default class SelectCard extends BasePanel {
         }
         const holder = this.selectHolder
         const card = this.selectedCard
+
+        this.selectHolder = null
+        this.selectedCard = null
+
         card.setSelect(false)
 
         if (holder) {
@@ -188,11 +202,13 @@ export default class SelectCard extends BasePanel {
         } else {
             card.afterMoving(true)
         }
+
+        this.refreshButton()
     }
 
     private putCardBackToPool(card: CardComponent, newCard: CardComponent) {
         card.node.parent = this.cardPool
-        const {pos, zIndex} = newCard.getDataBeforeMoving()
+        const { pos, zIndex } = newCard.getDataBeforeMoving()
         card.node.setPosition(pos)
         card.node.zIndex = zIndex
     }
@@ -207,7 +223,28 @@ export default class SelectCard extends BasePanel {
         this.cardHolderMap.set(card, holder)
     }
 
-    submit() {
+    private refreshButton(anima = true) {
+        const cards = this.getCards()
+        const bShow = cards.length == NUM_OF_CARDS
+        const target = this.confirmButton
+        cc.Tween.stopAllByTarget(target)
+        if (!anima) {
+            target.opacity = bShow ? 255 : 0
+            target.y = bShow ? 0 : -100
+            return
+        }
+        if (bShow) {
+            cc.tween(target)
+                .to(0.7, { opacity: 255, y: 0 }, { easing: cc.easing.sineIn })
+                .start()
+        } else {
+            cc.tween(target)
+                .to(0.7, { opacity: 0, y: -50 }, { easing: cc.easing.sineIn })
+                .start()
+        }
+    }
+
+    private getCards() {
         const holders = this.cardPlaceholders
         const m = this.holderCardMap
         const cards: Card[] = []
@@ -220,9 +257,15 @@ export default class SelectCard extends BasePanel {
             if (!card) {
                 continue
             }
-            cards.push(card.conf)
+            if (card.conf) {
+                cards.push(card.conf)
+            }
         }
-        this.setReturnValue(cards)
+        return cards;
+    }
+
+    submit() {
+        this.setReturnValue(this.getCards())
         this.hide()
     }
 
