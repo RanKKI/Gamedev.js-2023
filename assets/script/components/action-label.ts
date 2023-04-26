@@ -20,7 +20,7 @@ export default class ActionLabel extends cc.Component {
         this.node.setPosition(cc.Vec2.ZERO)
         cc.tween(this.node)
             .parallel(
-                cc.tween().to(1, { y: 100 }, { easing: cc.easing.sineIn }),
+                cc.tween().to(1, { y: 50 }, { easing: cc.easing.sineIn }),
                 cc.tween()
                     .to(0.5, { opacity: 255 })
                     .to(0.5, { opacity: 0 })
