@@ -49,4 +49,9 @@ export const objectPool = {
         const node = cc.instantiate(prefab);
         return node;
     }),
+    actionLabelsPool: new ObjectPool<cc.Node>(async () => {
+        const prefab = await loadPrefab("prefab/components/ActionLabel")
+        const node = cc.instantiate(prefab);
+        return node;
+    }),
 }

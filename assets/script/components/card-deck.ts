@@ -2,6 +2,7 @@ import { random, sleep } from "../common";
 import { objectPool } from "../common/object-pool";
 import { cardConfigManager } from "../game-logic/card-manager";
 import { UI } from "../manager/ui-manager";
+import ActionLabel from "./action-label";
 import { BarComponent } from "./bar";
 import { CardComponent } from "./card";
 import LinkPrefab from "./ext/linked-prefab";
@@ -384,6 +385,7 @@ export class CardDeckComponent extends cc.Component {
         } else {
             this.log("attacked by", damage, "damage")
         }
+        this.addAction(`-${damage} HP`)
         this.addHP(-damage)
     }
 
@@ -394,17 +396,20 @@ export class CardDeckComponent extends cc.Component {
     private execute_block(command: NormalCommand) {
         const block = Math.max(0, command.value)
         this.log("add block", block)
+        this.addAction(`+${block} Block`)
         this.playerAttributes.block += block
     }
 
     private execute_block_strength(command: NormalCommand, playerAttributes: PlayerAttribute) {
         const block = Math.max(0, command.value + playerAttributes.strength)
         this.log("add block", block)
+        this.addAction(`+${block} Block`)
         this.playerAttributes.block += block
     }
 
     private execute_strength(command: NormalCommand) {
         this.log("add strength", command.value)
+        this.addAction(`+${command.value} Strength`)
         this.playerAttributes.strength += command.value
     }
 
@@ -446,6 +451,18 @@ export class CardDeckComponent extends cc.Component {
             }
         }
         return commands
+    }
+
+    @property(cc.Node)
+    public actionLabelRoot: cc.Node = null
+
+    private async addAction(action: string) {
+        const node = await objectPool.actionLabelsPool.get()
+        const label = node.getComponent(ActionLabel)
+        label.do(action, this.actionLabelRoot)
+        if(this.mode == CardDeckMode.Computer) {
+            node.angle = -180;
+        }
     }
 
 }
