@@ -10,4 +10,5 @@ export interface PanelPrefab {
 export interface LayerPrefab {
     'prefab/layers/GameLayer': null,
     "prefab/layers/StartLayer": null,
+    "prefab/layers/FinishLayer": { label: string },
 }

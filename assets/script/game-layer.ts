@@ -79,11 +79,15 @@ export default class GameLayer extends BaseLayer {
             console.log(`-----------${round}------------`)
         }
 
+        const labelStr = isPlayerWin ? "You Win" : "You Lose"
         if (isPlayerWin) {
             console.log("player win")
         } else {
             console.log("player lose")
         }
+
+        await UI.openLayer("prefab/layers/FinishLayer", { label: labelStr })
+        this.close()
     }
 
 }

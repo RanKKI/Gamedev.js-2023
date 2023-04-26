@@ -34,7 +34,6 @@ export default class SelectCard extends BasePanel {
 
     protected start(): void {
         this.refreshButton(false)
-        super.start()
     }
 
     protected async playEnterAnima(duration: number) {
