@@ -12,7 +12,7 @@ export default class Main extends cc.Component {
         console.log("Main start")
         await cardConfigManager.loadConfigs()
         await this.loadUserData()
-        await UI.openLayer("prefab/layers/GameLayer", null)
+        await UI.openLayer("prefab/layers/StartLayer", null)
     }
 
     private async loadUserData() {
