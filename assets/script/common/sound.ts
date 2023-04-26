@@ -1,3 +1,4 @@
+import { loadRes } from "../manager/resources"
 import { userData } from "../user/userdata"
 
 export enum Sound {
@@ -74,11 +75,7 @@ class SoundManager {
         } else if (this.clips[item] != null) {
             clip = this.clips[item]
         } else {
-            clip = await new Promise(resolve => {
-                cc.resources.load(item, cc.AudioClip, (err, asset: cc.AudioClip) => {
-                    err ? resolve(null) : resolve(asset)
-                })
-            })
+            clip = await loadRes<cc.AudioClip>(item, cc.AudioClip)
             this.clips[item] = clip
         }
         if (!clip) {
@@ -95,11 +92,7 @@ class SoundManager {
         }
         this.bgmID = 0
 
-        const clip = await new Promise<cc.AudioClip>(resolve => {
-            cc.resources.load(Sound.BGM, cc.AudioClip, (err, asset: cc.AudioClip) => {
-                err ? resolve(null) : resolve(asset)
-            })
-        })
+        const clip = await loadRes<cc.AudioClip>(Sound.BGM, cc.AudioClip)
 
         this.bgmID = cc.audioEngine.playMusic(clip, true)
         cc.audioEngine.setMusicVolume(0.2)

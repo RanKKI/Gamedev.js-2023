@@ -39,6 +39,8 @@ import { Sound, sound } from "./common/sound";
         }
     }
 
-    sound.playBGM()
+    if(!CC_EDITOR) {
+        sound.playBGM()
+    }
 
 })()
