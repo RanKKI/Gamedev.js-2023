@@ -1,7 +1,7 @@
 import { userData } from "../user/userdata"
 
 export enum Sound {
-    COMMON = "sound/common",
+    COMMON = "sound/qubodup-hover2",
     BGM = "sound/bgm"
 }
 
