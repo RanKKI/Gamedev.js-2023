@@ -25,7 +25,7 @@ interface PlayerAttribute {
     strength: number
 }
 
-const MAX_HP = 40
+const MAX_HP = 30
 const DEFAULT_PLAYER_ATTRIBUTE: PlayerAttribute = {
     block: 0,
     strength: 0,
