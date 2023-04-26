@@ -24,7 +24,7 @@ In this game, you play as a player battling against an enemy. You both use the s
 ## Creators
 
  - [@RanKKI](https://github.com/RanKKI) (Developer)
- - @Aaron Jiang (Designer)
+ - @Aaron Jiang (Game Designer)
  - @nothing (Artist)
 
 ## Tech Stack
