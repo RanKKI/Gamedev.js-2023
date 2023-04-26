@@ -145,6 +145,7 @@ export default class SelectCard extends BasePanel {
         card.showDescription()
         card.beforeMoving()
         card.setSelect(true)
+        card.setMoving()
     }
 
     private onTouchMove(evt: cc.Event.EventTouch) {
