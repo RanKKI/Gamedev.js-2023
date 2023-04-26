@@ -1,5 +1,6 @@
 interface ISetting {
     bgm: boolean
+    showInfo: boolean
 }
 
 interface IData {
@@ -9,7 +10,8 @@ interface IData {
 class UserSettings {
 
     private settings: ISetting = {
-        bgm: true
+        bgm: true,
+        showInfo: true,
     }
 
     private proxy = new Proxy(this.settings, {
