@@ -22,12 +22,19 @@ export class CardComponent extends cc.Component {
     @property(cc.Sprite)
     public cardSprite: cc.Sprite = null;
 
+    @property(cc.Node)
+    public descriptionNode: cc.Node = null
+
+    @property(cc.Label)
+    public descriptionLabel: cc.Label = null
+
     private isVisible: boolean = false;
     private bSelected: boolean = false;
 
     protected start(): void {
         this.setIsVisible(this.isVisible)
         this.setSelect(this.bSelected)
+        this.hideDescription()
     }
 
     public async setIsVisible(isVisible: boolean, withAnima?: boolean) {
@@ -130,9 +137,11 @@ export class CardComponent extends cc.Component {
             .then((spriteFrame: cc.SpriteFrame) => {
                 this.cardSprite.spriteFrame = spriteFrame
             })
+        this.descriptionLabel.string = conf.description
     }
 
     public recycle() {
+        this.hideDescription()
         // reset all properties
         this.setIsVisible(false);
         this.setSelect(false);
@@ -146,6 +155,14 @@ export class CardComponent extends cc.Component {
         this.cardNode.opacity = 255
         this.cardBg.opacity = 255
         this.conf = null
+    }
+
+    public showDescription() {
+        this.descriptionNode.active = true
+    }
+
+    public hideDescription() {
+        this.descriptionNode.active = false
     }
 
 }

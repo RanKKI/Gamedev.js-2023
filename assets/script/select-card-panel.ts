@@ -143,6 +143,7 @@ export default class SelectCard extends BasePanel {
         }
 
         const card = this.selectedCard
+        card.showDescription()
         card.beforeMoving()
         card.setSelect(true)
     }
@@ -152,6 +153,7 @@ export default class SelectCard extends BasePanel {
             return
         }
         const card = this.selectedCard
+        card.hideDescription()
         card.setMoving(evt)
         this.selectHolder = this.getTouchedHolder(evt)
     }
@@ -181,6 +183,7 @@ export default class SelectCard extends BasePanel {
         this.selectedCard = null
 
         card.setSelect(false)
+        card.hideDescription()
 
         if (holder) {
             const oldCard = this.holderCardMap.get(holder)
