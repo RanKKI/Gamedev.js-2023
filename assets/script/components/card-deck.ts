@@ -1,5 +1,6 @@
 import { random, sleep } from "../common";
 import { objectPool } from "../common/object-pool";
+import { Sound, sound } from "../common/sound";
 import { cardConfigManager } from "../game-logic/card-manager";
 import { UI } from "../manager/ui-manager";
 import ActionLabel from "./action-label";
@@ -368,6 +369,7 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private execute_attack(command: NormalCommand) {
+        sound.play(Sound.ATTACK)
         let damage = command.value
         let block = this.playerAttributes.block
         if (block > 0) {
@@ -394,6 +396,7 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private execute_block(command: NormalCommand) {
+        sound.play(Sound.BLOCK)
         const block = Math.max(0, command.value)
         this.log("add block", block)
         this.addAction(`+${block} Block`)
@@ -401,6 +404,7 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private execute_block_strength(command: NormalCommand, playerAttributes: PlayerAttribute) {
+        sound.play(Sound.BLOCK)
         const block = Math.max(0, command.value + playerAttributes.strength)
         this.log("add block", block)
         this.addAction(`+${block} Block`)
@@ -408,12 +412,14 @@ export class CardDeckComponent extends cc.Component {
     }
 
     private execute_strength(command: NormalCommand) {
+        sound.play(Sound.STRENGTH)
         this.log("add strength", command.value)
         this.addAction(`+${command.value} Strength`)
         this.playerAttributes.strength += command.value
     }
 
     private execute_vengeance(command: NormalCommand): NormalCommand {
+        sound.play(Sound.VENGEANCE)
         // If health is reduced last turn, deals 6 damage, otherwise, deals 3 damage.
         const damage = this.isTrigger(TriggerType.HPChanged) ? 6 : 3
         this.log(`Vengeance triggered, deal ${damage}  damage to enemy`)

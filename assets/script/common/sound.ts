@@ -2,7 +2,11 @@ import { userData } from "../user/userdata"
 
 export enum Sound {
     COMMON = "sound/qubodup-hover2",
-    BGM = "sound/bgm"
+    BGM = "sound/bgm",
+    BLOCK = "sound/swing",
+    ATTACK = "sound/sword-unsheathe",
+    VENGEANCE = "sound/sword-unsheathe4",
+    STRENGTH = "sound/random5",
 }
 
 
@@ -98,7 +102,7 @@ class SoundManager {
         })
 
         this.bgmID = cc.audioEngine.playMusic(clip, true)
-        cc.audioEngine.setMusicVolume(0.5)
+        cc.audioEngine.setMusicVolume(0.2)
     }
 
     onBGMSwitchChange() {

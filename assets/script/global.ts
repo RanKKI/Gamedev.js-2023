@@ -39,4 +39,6 @@ import { Sound, sound } from "./common/sound";
         }
     }
 
+    sound.playBGM()
+
 })()
